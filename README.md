@@ -12,6 +12,17 @@ the Rust backend which has a number of advantages:
   - See what was happening in the Rust backend and the browser frontend at the
     time of the event
 
+## Platform Support
+
+- Windows, macOS, Linux — full support including minidump native crash capture
+- Android — JS error capture, Rust panic capture (minidump compiles but crashpad does not support Android)
+- OpenHarmony (OHOS) — JS error capture, Rust panic capture (no minidump)
+- iOS — JS error capture, Rust panic capture (no minidump)
+
+> **Note:** On OHOS, the `sentry` crate must use `rustls` instead of `native-tls` (openssl) to avoid cross-compilation issues. See the example app `Cargo.toml` for the correct dependency configuration.
+
+> **OHOS device types:** OHOS supports both mobile and desktop form factors. Set `OHOS_DEVICE_TYPE=desktop` for desktop builds (enables tray/menu bar) or leave unset/default for mobile. The `tauri::mobile_entry_point` macro is gated with `any(mobile, target_env = "ohos")` to ensure NAPI entry points are generated for both device types.
+
 ## Installation
 
 `sentry-rust-minidump` is re-exported by `sentry-tauri` so you don't need to add
@@ -24,6 +35,11 @@ Add `sentry` and `tauri-plugin-sentry` to dependencies in `Cargo.toml`:
 sentry = "0.42"
 tauri-plugin-sentry = "0.5"
 ```
+
+> **OHOS targets**: use `rustls` instead of `native-tls` to avoid OpenSSL cross-compilation:
+> ```toml
+> sentry = { version = "0.42", default-features = false, features = ["reqwest", "rustls", "backtrace", "contexts", "panic", "debug-images"] }
+> ```
 
 Run one of these commands to add the capabilities:
 
@@ -72,7 +88,7 @@ pub fn run() {
     ));
 
     // Caution! Everything before here runs in both app and crash reporter processes
-    #[cfg(not(target_os = "ios"))]
+    #[cfg(all(not(target_os = "ios"), not(target_env = "ohos")))]
     let _guard = tauri_plugin_sentry::minidump::init(&client);
     // Everything after here runs in only the app process
 

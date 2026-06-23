@@ -12,12 +12,21 @@ version = "0.1.0"
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-sentry = "0.42"
-sadness-generator = "0.6"
+# rustls used instead of native-tls to avoid openssl cross-compilation for OHOS.
+# This applies to all platforms for simplicity since rustls works everywhere.
+sentry = { version = "0.42", default-features = false, features = ["reqwest", "rustls", "backtrace", "contexts", "panic", "debug-images"] }
 tauri-plugin-sentry = { path = "../../.." }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tauri = { version = "2", features = [] }
+
+[target.'cfg(all(not(target_os = "ios"), not(target_env = "ohos")))'.dependencies]
+sadness-generator = "0.6"
+
+# Required by tauri::mobile_entry_point macro expansion for OHOS builds
+[target.'cfg(target_env = "ohos")'.dependencies]
+napi-ohos = "1"
+napi-derive-ohos = "1"
 
 [lib]
 name = "app_lib"

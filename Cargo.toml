@@ -21,7 +21,7 @@ tauri = { version = "2", default-features = false }
 thiserror = "2"
 schemars = "0.8"
 
-[target.'cfg(not(target_os = "ios"))'.dependencies]
+[target.'cfg(all(not(target_os = "ios"), not(target_env = "ohos")))'.dependencies]
 sentry-rust-minidump = { version = "0.13", optional = true }
 
 [build-dependencies]

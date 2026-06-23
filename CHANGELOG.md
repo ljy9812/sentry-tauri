@@ -1,3 +1,11 @@
+## Unreleased
+
+- feat: Add OpenHarmony (OHOS) desktop platform support
+  - Exclude `sentry-rust-minidump` on OHOS (similar to iOS exclusion)
+  - JS error capture and breadcrumb forwarding work via OHOS WebView (Chromium-based)
+  - Rust panic capture remains functional on OHOS
+  - Known limitation: native crash capture (minidump) is not available on OHOS; planned future enhancement via `hiAppEvent` API
+
 ## v0.5.0
 
 - feat: Update `sentry` to v0.42 and `sentry-rust-minidump` to v0.13

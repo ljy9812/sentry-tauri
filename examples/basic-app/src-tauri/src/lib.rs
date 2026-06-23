@@ -19,15 +19,16 @@ fn rust_panic() {
     panic!("This is a panic from Rust");
 }
 
+#[cfg(all(not(target_os = "ios"), not(target_env = "ohos")))]
 #[tauri::command]
 fn native_crash() {
     unsafe { sadness_generator::raise_segfault() }
 }
 
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
+#[cfg_attr(any(mobile, target_env = "ohos"), tauri::mobile_entry_point)]
 pub fn run() {
     let client = sentry::init((
-        "https://233a45e5efe34c47a3536797ce15dafa@o447951.ingest.sentry.io/5650507",
+        option_env!("SENTRY_DSN").unwrap_or(""),
         sentry::ClientOptions {
             release: sentry::release_name!(),
             debug: true,
@@ -35,6 +36,7 @@ pub fn run() {
         },
     ));
 
+    #[cfg(all(not(target_os = "ios"), not(target_env = "ohos")))]
     let _guard = tauri_plugin_sentry::minidump::init(&client);
 
     tauri::Builder::default()
@@ -42,6 +44,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             rust_breadcrumb,
             rust_panic,
+            #[cfg(all(not(target_os = "ios"), not(target_env = "ohos")))]
             native_crash
         ])
         .run(tauri::generate_context!())
